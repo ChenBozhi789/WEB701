@@ -4,7 +4,7 @@ const port = 3000;
 
 app.use(express.json());
 
-// Import  routes
+// Import routes
 const accountRoutes = require('./routes/accountRoutes');
 const itemRoutes = require('./routes/itemRoutes');
 const tokenRoutes = require('./routes/tokenRoutes');

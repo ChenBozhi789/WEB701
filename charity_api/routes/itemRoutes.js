@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
 
-// http://localhost:3000/api/items/1
+// http://localhost:3000/api/items
 router.post('/', (req, res) => {
     res.status(201).json({ message: 'Item created successfully' });
 });
