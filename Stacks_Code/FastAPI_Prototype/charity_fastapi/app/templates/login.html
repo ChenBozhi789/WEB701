@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Login / Register</h2>
+{% if error %}<p style="color:#c00;">{{ error }}</p>{% endif %}
+
+<h3>Register</h3>
+<form method="post" action="/auth/register">
+  <input name="email" placeholder="email" required>
+  <input name="password" type="password" placeholder="password" required>
+  <select name="role">
+    <option value="member">member</option>
+    <option value="beneficiary" selected>beneficiary</option>
+  </select>
+  <button>Create account</button>
+</form>
+
+<h3>Login</h3>
+<form method="post" action="/auth/login">
+  <input name="email" placeholder="email" required>
+  <input name="password" type="password" placeholder="password" required>
+  <button>Login</button>
+</form>
+{% endblock %}

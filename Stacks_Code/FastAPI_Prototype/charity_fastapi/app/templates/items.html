@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block content %}
+<h2>Items</h2>
+
+{% if user and user.role == "member" %}
+  <h3>Create Item</h3>
+  <form method="post" action="/items/create">
+    <input name="name" placeholder="name" required>
+    <input name="qty" type="number" value="1" min="0">
+    <input name="desc" placeholder="description">
+    <button>Add</button>
+  </form>
+{% endif %}
+
+{% if user and user.role == "beneficiary" %}
+  <h3>Claim Tokens</h3>
+  <form method="post" action="/benefit/claim">
+    <button>Claim +10</button>
+  </form>
+{% endif %}
+
+<h3>Transfer Tokens</h3>
+<form method="post" action="/tokens/transfer">
+  <input name="to_email" placeholder="receiver email" required>
+  <input name="amount" type="number" value="1" min="1" required>
+  <button>Send</button>
+</form>
+
+<table>
+  <thead><tr><th>ID</th><th>Name</th><th>Qty</th><th>Description</th><th>Owner</th></tr></thead>
+  <tbody>
+    {% for it in items %}
+      <tr>
+        <td>{{ it.id }}</td>
+        <td>{{ it.name }}</td>
+        <td>{{ it.qty }}</td>
+        <td>{{ it.description }}</td>
+        <td>{{ it.owner_id }}</td>
+      </tr>
+    {% endfor %}
+  </tbody>
+</table>
+
+<h3>Change Password</h3>
+<form method="post" action="/auth/change-password">
+  <input name="current_password" type="password" placeholder="current password" required>
+  <input name="new_password" type="password" placeholder="new password (min 6)" required>
+  <input name="confirm_new_password" type="password" placeholder="confirm new password" required>
+  <button>Update</button>
+</form>
+{% endblock %}
