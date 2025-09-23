@@ -1,0 +1,47 @@
+﻿@page "/products"
+@inject HttpClient Http
+
+<h3>Products</h3>
+
+<EditForm Model="@form" OnValidSubmit="@Create">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <input class="form-control" @bind="form.Name" placeholder="Name" />
+    <input class="form-control" @bind="form.Category" placeholder="Category" />
+    <input class="form-control" type="number" min="1" @bind="form.Quantity" placeholder="Qty" />
+    <button class="btn btn-primary mt-2">Add</button>
+</EditForm>
+
+@if (items is null)
+{
+     <p><em>Loading…</em></p>
+}
+else
+{
+    <ul>
+        @foreach (var i in items)
+        {
+            <li>@i.Name (@i.Category) — qty @i.Quantity — by @i.OwnerEmail</li>
+        }
+    </ul>
+}
+
+@code {
+    record ItemDto(int Id, string Name, string Category, int Quantity, DateTime Time, string OwnerEmail);
+    record CreateItemDto(string Name, string Category, int Quantity);
+
+    private List<ItemDto>? items;
+    private CreateItemDto form = new("", "", 1);
+
+    protected override async Task OnInitializedAsync()
+    {
+        items = await Http.GetFromJsonAsync<List<ItemDto>>("api/items");
+    }
+
+    private async Task Create()
+    {
+        var resp = await Http.PostAsJsonAsync("api/items", form);
+        if (resp.IsSuccessStatusCode)
+            items = await Http.GetFromJsonAsync<List<ItemDto>>("api/items");
+    }
+}

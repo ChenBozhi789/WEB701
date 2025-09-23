@@ -1,0 +1,40 @@
+﻿@page "/tokens"
+@inject HttpClient Http
+
+<h3>Transfer Tokens</h3>
+
+@if (!string.IsNullOrEmpty(msg))
+{
+    <div>@msg</div>
+}
+
+<EditForm Model="@vm" OnValidSubmit="@Send">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
+    <input class="form-control" @bind="vm.ReceiverEmail" placeholder="Receiver email" />
+    <input class="form-control" type="number" min="1" @bind="vm.Amount" placeholder="Amount" />
+    <input class="form-control" @bind="vm.Note" placeholder="Note (optional)" />
+    <button class="btn btn-dark mt-2">Send</button>
+</EditForm>
+
+<button class="btn btn-secondary mt-3" @onclick="MyBalance">My Balance</button>
+<p>@balanceText</p>
+
+@code {
+    class TransferVm { public string ReceiverEmail { get; set; } = ""; public int Amount { get; set; } = 1; public string? Note { get; set; } }
+    private TransferVm vm = new();
+    private string? msg;
+    private string? balanceText;
+
+    private async Task Send()
+    {
+        var res = await Http.PostAsJsonAsync("api/tokens/transfer", vm);
+        msg = res.IsSuccessStatusCode ? "Transfer success." : $"Error: {await res.Content.ReadAsStringAsync()}";
+    }
+
+    private async Task MyBalance()
+    {
+        var r = await Http.GetAsync("api/tokens/balance");
+        balanceText = r.IsSuccessStatusCode ? await r.Content.ReadAsStringAsync() : "Not logged in";
+    }
+}

@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.10.35027.167
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor_Charity", "Blazor_Charity\Blazor_Charity\Blazor_Charity.csproj", "{FDFCBC2C-AFE4-4B2D-9086-47E100838D89}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Blazor_Charity.Client", "Blazor_Charity\Blazor_Charity.Client\Blazor_Charity.Client.csproj", "{502607A7-4252-4CF4-A192-C297E9967D77}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FDFCBC2C-AFE4-4B2D-9086-47E100838D89}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FDFCBC2C-AFE4-4B2D-9086-47E100838D89}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FDFCBC2C-AFE4-4B2D-9086-47E100838D89}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FDFCBC2C-AFE4-4B2D-9086-47E100838D89}.Release|Any CPU.Build.0 = Release|Any CPU
+		{502607A7-4252-4CF4-A192-C297E9967D77}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{502607A7-4252-4CF4-A192-C297E9967D77}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{502607A7-4252-4CF4-A192-C297E9967D77}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{502607A7-4252-4CF4-A192-C297E9967D77}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5BE6AC0A-462E-4462-ACCF-79EE76FDA006}
+	EndGlobalSection
+EndGlobal

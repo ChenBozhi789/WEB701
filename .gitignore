@@ -46,10 +46,34 @@ bin/
 obj/
 *.user
 *.suo
+*.cache
+*.dll
+*.exe
+*.pdb
+*.mdb
+*.dbmdl
+*.bak
+*.log
+*.vspscc
+*.vssscc
 
-# IDE / OS
-.vscode/
+# Entity Framework Migrations (optional, keep if you want history in repo)
+Migrations/
+
+# Visual Studio
+.vs/
+*.vcxproj.user
+*.csproj.user
+*.dbmdl
+*.jfm
+Generated\ Files/
+
+# Rider / JetBrains
 .idea/
+
+# OS junk
 .DS_Store
 Thumbs.db
+
+# Logs
 *.log
