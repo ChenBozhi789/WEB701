@@ -1,0 +1,70 @@
+﻿@page "/transfer"
+@rendermode InteractiveWebAssembly
+@inject HttpClient Http
+
+<h3>Token Transfer</h3>
+
+<p><b>My Balance:</b> @balance</p>
+
+<div class="mb-2">
+    <input class="form-control" placeholder="Receiver Email" @bind="toEmail" />
+</div>
+<div class="mb-2">
+    <input class="form-control" type="number" min="1" @bind="amount" />
+</div>
+<button class="btn btn-primary" @onclick="Send">Send</button>
+
+<p class="mt-2">@msg</p>
+
+@code {
+    string toEmail = "";
+    int amount = 1;
+    int balance = 0;
+    string msg = "";
+
+    // 等到组件真正“交互可用”后（浏览器已带上身份 Cookie）再请求
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await RefreshBalance();
+    }
+
+    async Task RefreshBalance()
+    {
+        var resp = await Http.GetAsync("api/token/me");
+        var ctype = resp.Content.Headers.ContentType?.MediaType;
+
+        if (resp.IsSuccessStatusCode && ctype == "application/json")
+        {
+            var me = await resp.Content.ReadFromJsonAsync<MyBal>();
+            balance = me?.balance ?? 0;
+            msg = "";
+        }
+        else
+        {
+            var text = await resp.Content.ReadAsStringAsync();
+            msg = $"Failed to load balance ({(int)resp.StatusCode}).";
+        }
+        StateHasChanged();
+    }
+
+    async Task Send()
+    {
+        var resp = await Http.PostAsJsonAsync("api/token/transfer",
+                     new { ToEmail = toEmail.Trim(), Amount = amount });
+
+        if (resp.IsSuccessStatusCode)
+        {
+            msg = "Success";
+            await RefreshBalance();
+        }
+        else
+        {
+            var text = await resp.Content.ReadAsStringAsync();
+            msg = $"Transfer failed ({(int)resp.StatusCode}): {text}";
+        }
+    }
+
+    // 匹配 /api/token/me 的返回结构
+    private record MyBal(string email, int balance);
+}

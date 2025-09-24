@@ -5,21 +5,21 @@ using Blazor_Charity.Data;
 using Microsoft.AspNetCore.Components.Authorization;       // PersistingRevalidatingAuthenticationStateProvider
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Components;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// ================= DB =================
+// database context
 var cs = builder.Configuration.GetConnectionString("DefaultConnection")
          ?? throw new InvalidOperationException("Missing DefaultConnection");
 builder.Services.AddDbContext<ApplicationDbContext>(o => o.UseNpgsql(cs));
 
-// ================= Identity（含角色）=================
+// identity
 builder.Services
     .AddIdentity<ApplicationUser, IdentityRole>(o =>
     {
-        o.SignIn.RequireConfirmedAccount = true;
+        o.SignIn.RequireConfirmedAccount = false;
         o.User.RequireUniqueEmail = true;
-        // 视需要放宽密码策略
         // o.Password.RequiredLength = 6;
         // o.Password.RequireNonAlphanumeric = false;
     })
@@ -29,28 +29,35 @@ builder.Services
 builder.Services.AddAuthentication();
 builder.Services.AddAuthorization();
 
-// ！！！Register 页面需要的依赖（缺它们会报 RedirectManager/Accessor 未注册的异常）
+// Dependencies required for the Register page
 builder.Services.AddCascadingAuthenticationState();
 builder.Services.AddScoped<IdentityUserAccessor>();
 builder.Services.AddScoped<IdentityRedirectManager>();
 builder.Services.AddScoped<AuthenticationStateProvider, PersistingRevalidatingAuthenticationStateProvider>();
 builder.Services.AddSingleton<IEmailSender<ApplicationUser>, AppNoOpEmailSender>();
 
-// ================= API Controllers =================
+// Make the component injectable with HttpClient
+builder.Services.AddHttpClient();
+builder.Services.AddScoped<HttpClient>(sp =>
+{
+    var nav = sp.GetRequiredService<NavigationManager>();
+    return new HttpClient { BaseAddress = new Uri(nav.BaseUri) };
+});
+
+// api controllers
 builder.Services.AddControllers();
 
-// ================= Blazor =================
+// blazor
 builder.Services.AddRazorComponents()
     .AddInteractiveServerComponents()
     .AddInteractiveWebAssemblyComponents();
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 
-// ================= 业务服务 =================
 builder.Services.AddScoped<ProductService>();
 builder.Services.AddScoped<TokenService>();
 
-// ================= CORS（按需调整端口）=================
+// CORS
 const string ClientCors = "ClientCors";
 builder.Services.AddCors(opt =>
 {
@@ -63,7 +70,15 @@ builder.Services.AddCors(opt =>
 
 var app = builder.Build();
 
-// ================= 数据迁移与种子 =================
+using (var scope = app.Services.CreateScope())
+{
+    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    foreach (var r in new[] { "Member", "Beneficiary" })
+        if (!await roleMgr.RoleExistsAsync(r))
+            await roleMgr.CreateAsync(new IdentityRole(r));
+}
+
+// data migration and seed
 using (var scope = app.Services.CreateScope())
 {
     var sp = scope.ServiceProvider;
@@ -95,7 +110,7 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// ================= 中间件管道 =================
+// middleware pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseWebAssemblyDebugging();
@@ -114,19 +129,20 @@ app.UseCors(ClientCors);
 app.UseAuthentication();
 app.UseAuthorization();
 
-// 防伪：必须在 Auth 之后、MapRazorComponents/Controllers 之前
+app.MapControllers();
+
 app.UseAntiforgery();
 
-// Blazor（Server + WASM 托管）
+// blazor
 app.MapRazorComponents<App>()
    .AddInteractiveServerRenderMode()
    .AddInteractiveWebAssemblyRenderMode()
    .AddAdditionalAssemblies(typeof(Blazor_Charity.Client._Imports).Assembly);
 
-// Web API
+// web API
 app.MapControllers();
 
-// Identity 端点（/Account/Register, /Account/Login 等）
+// identity endpoints
 app.MapAdditionalIdentityEndpoints();
 
 app.Run();

@@ -14,6 +14,8 @@
 @inject ILogger<Register> Logger
 @inject NavigationManager NavigationManager
 @inject IdentityRedirectManager RedirectManager
+@inject RoleManager<IdentityRole> RoleManager
+
 
 <PageTitle>Register</PageTitle>
 
@@ -42,6 +44,15 @@
                 <label for="confirm-password">Confirm Password</label>
                 <ValidationMessage For="() => Input.ConfirmPassword" class="text-danger" />
             </div>
+            <div class="form-floating mb-3">
+                <InputSelect class="form-control" @bind-Value="Input.Role">
+                    <option value="Member">Member</option>
+                    <option value="Beneficiary">Beneficiary</option>
+                </InputSelect>
+                <label>Role</label>
+                <ValidationMessage For="() => Input.Role" class="text-danger" />
+            </div>
+
             <button type="submit" class="w-100 btn btn-lg btn-primary">Register</button>
         </EditForm>
     </div>
@@ -98,6 +109,13 @@
                 new() { ["email"] = Input.Email, ["returnUrl"] = ReturnUrl });
         }
 
+        // if character does not exist, create it
+        if (!await RoleManager.RoleExistsAsync(Input.Role))
+            await RoleManager.CreateAsync(new IdentityRole(Input.Role));
+
+        // add new user to selected role
+        await UserManager.AddToRoleAsync(user, Input.Role);
+
         await SignInManager.SignInAsync(user, isPersistent: false);
         RedirectManager.RedirectTo(ReturnUrl);
     }
@@ -141,5 +159,8 @@
         [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "The password and confirmation password do not match.")]
         public string ConfirmPassword { get; set; } = "";
+
+        [Required]
+        public string Role { get; set; } = "Member";
     }
 }
