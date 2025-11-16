@@ -1,0 +1,51 @@
+/* Member App Page Styles */
+
+.dashboard-page,
+.transfer-page,
+.donations-page {
+  max-width: 100%;
+}
+
+.settings-page {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.dashboard-page h2 {
+  margin-top: 0;
+  margin-bottom: 24px;
+  color: #333;
+  font-size: 1.5rem;
+}
+
+.account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+}
+
+.info-row {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  padding: 16px 0;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: #4a4a4a;
+  min-width: 140px;
+  font-size: 0.95rem;
+}
+
+.info-value {
+  color: #2a2a2a;
+  font-size: 1rem;
+  flex: 1;
+}
+

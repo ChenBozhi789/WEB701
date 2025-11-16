@@ -1,23 +1,29 @@
 const jwt = require('jsonwebtoken');
 
-// middleware to require authentication
 function requireAuth(req, res, next){
   try{
-    // Support both cookie and Authorization header
-    const bearer = req.headers.authorization?.split(' ')[1];
+    // get token from Authorization header or Cookie
+    const bearer = req.headers.authorization?.split(' ')[1]; // like Postman header: Authorization: Bearer <token>
     const token = bearer || req.cookies?.jwt;
 
-    // if no token, return 401
+    // deny access if no token
     if(!token) return res.status(401).json({message:"No token"});
 
-    // verify token
-    const payload = jwt.verify(token, process.env.JWT_SECRET || "dev_secret_change_me");
+    // verify the token
+    const payload = jwt.verify(token, process.env.JWT_SECRET || "dev_secret");
+    
+    // check if the token contains the required user ID
+    if (!payload.sub) {
+      return res.status(401).json({message:"Invalid token: missing user ID"});
+    }
+    
+    // save user information to req.user
     req.user = { id: payload.sub, role: payload.role };
 
-    // if valid, set req.user
     next();
-  }catch{
-    // if invalid, return 401
+  } catch(err){
+    // deny access if verification fails
+    console.error('Auth middleware error:', err.message);
     res.status(401).json({message:"Invalid/expired token"});
   }
 }

@@ -1,39 +1,75 @@
 const express = require('express');
-const mongoose = require('mongoose');
-const { requireAuth } = require('../middleware/auth');
 const User = require('../models/User');
 const Transaction = require('../models/Transaction');
+const { requireAuth } = require('../middleware/auth');
 
-const r = express.Router();
+const tokenRouter = express.Router();
+
+// beneficiaries can claim initial tokens
+tokenRouter.post('/claim-initial', requireAuth, async (req, res) => {
+  try {
+    // only beneficiaries can claim initial tokens
+    if (req.user.role !== 'beneficiary') {
+      return res.status(403).json({ message: 'Only beneficiaries can claim initial tokens' });
+    }
+
+    // get user
+    const user = await User.findById(req.user.id);
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    // check if already claimed
+    if (user.hasClaimedInitialTokens) {
+      return res.status(400).json({ message: 'Initial tokens have already been claimed' });
+    }
+
+    // add 50 tokens and mark as claimed
+    const INITIAL_TOKENS = 50;
+    await User.updateOne(
+      { _id: user._id },
+      { 
+        $inc: { tokenBalance: INITIAL_TOKENS },
+        $set: { hasClaimedInitialTokens: true }
+      }
+    );
+
+    // get updated user
+    const updatedUser = await User.findById(req.user.id);
+
+    return res.status(200).json({
+      ok: true,
+      message: `Successfully claimed ${INITIAL_TOKENS} initial tokens`,
+      tokenBalance: updatedUser.tokenBalance
+    });
+  } catch (err) {
+    console.error(err);
+    return res.status(500).json({ message: 'Server error' });
+  }
+});
 
 // transfer tokens directly
-r.post('/transfer-direct', requireAuth, async (req, res) => {
+tokenRouter.post('/transfer-direct', requireAuth, async (req, res) => {
   try {
-    const { toUserId, toEmail, amount } = req.body;
+    const { toEmail, amount } = req.body;
     const amt = Number(amount);
 
     // basic validation
-    if ((!toUserId && !toEmail) || !Number.isFinite(amt) || amt <= 0) {
-      return res.status(400).json({ message: 'Provide toUserId or toEmail and a positive amount' });
+    if (!toEmail || !Number.isFinite(amt) || amt <= 0) {
+      return res.status(400).json({ message: 'Provide toEmail and a positive amount' });
     }
 
     // gets sender
     const sender = await User.findById(req.user.id);
     if (!sender) return res.status(404).json({ message: 'Sender not found' });
 
-    // gets receiver
-    let receiver = null;
-    if (toUserId && mongoose.isValidObjectId(toUserId)) {
-      receiver = await User.findById(toUserId);
-    }
-    if (!receiver && toEmail) {
-      receiver = await User.findOne({ email: String(toEmail).toLowerCase() });
-    }
+    // gets receiver by email
+    const receiver = await User.findOne({ email: String(toEmail).toLowerCase() });
     if (!receiver) return res.status(404).json({ message: 'Receiver not found' });
 
     // no self transfer
     if (String(receiver._id) === String(sender._id)) {
-      return res.status(400).json({ message: 'Cannot transfer to yourself' });
+      return res.status(400).json({ message: 'You cannot transfer to yourself' });
     }
 
     // check roles
@@ -75,4 +111,4 @@ r.post('/transfer-direct', requireAuth, async (req, res) => {
   }
 });
 
-module.exports = r;
+module.exports = tokenRouter;

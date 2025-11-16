@@ -1,0 +1,20 @@
+# Uploaded images (keep directory but ignore files)
+uploads/*
+!uploads/.gitkeep
+
+# Environment variables
+.env
+
+# Google Cloud Service Account credentials (IMPORTANT: Never commit these!)
+google-credentials.json
+*-credentials.json
+*.json
+!package*.json
+!package-lock.json
+
+# Node modules
+node_modules/
+
+# Logs
+*.log
+
